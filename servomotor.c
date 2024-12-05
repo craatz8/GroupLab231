@@ -60,11 +60,6 @@ char *test_servo(char *buffer) {
 
     ;
     return buffer;
-
-    //if left button is pressed, call center_servo()
-    // and print servo is centered to buffer
-    // requirements found in section 3
-    // sprintf??
 }
 
 void center_servo() {
@@ -86,31 +81,6 @@ void rotate_full_counterclockwise() {
 }
 
 static void handle_timer_interrupt() {
-    // //actually make it move
-    // // make use of current pulse width
-
-    // u_int32_t time_until_next_rising_edge;
-    // u_int32_t time_until_next_falling_edge;
-
-    // //actually i think these might need to be while loops (busy???) (not busy???)
-    // // might need to add timer
-
-    // timer
-
-    // if (time_until_next_rising_edge == 0) {
-    //     ioport->output |= 1 << SERVO_PIN;
-    //     time_until_next_rising_edge = SIGNAL_PERIOD_uS;
-    //     //
-    // }
-    // if (time_until_next_falling_edge == 0) {
-    //     ioport->output &= ~(1 << SERVO_PIN);
-    //     time_until_next_falling_edge = pulse_width_us;
-
-    // }
-
-    // // use signal period and pulse width
-
-
     // Update remaining times for the rising and falling edges
     if (time_until_next_rising_edge > 0) {
         time_until_next_rising_edge -= PULSE_INCREMENT_uS;
