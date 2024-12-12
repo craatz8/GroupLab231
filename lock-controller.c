@@ -24,6 +24,7 @@
 #include "lock-controller.h"
 #include "rotary-encoder.h"    // direction_t, get_direction()
 #include "servomotor.h"        // rotate_full_clockwise(), rotate_full_counterclockwise()
+#include <hardware/timer.h>
 
 // Lock states
 typedef enum {
@@ -164,7 +165,9 @@ void control_lock(void) {
             }
 
             if (cowpi_left_switch_is_in_right_position() && cowpi_right_button_is_pressed()) {
-
+                char display_buffer[32];
+                snprintf(display_buffer, sizeof(display_buffer), "enter   -  -  ");
+                display_string(0, display_buffer);
             }
 
             
