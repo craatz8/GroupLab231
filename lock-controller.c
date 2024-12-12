@@ -57,6 +57,10 @@ static bool is_bad_try_blinking = false;
 // Button state tracking for edge detection
 static bool last_left_button_state = false;
 
+static uint8_t num_first_entry_turns = 1;
+static uint8_t num_second_entry_turns = 1;
+static uint8_t num_third_entry_turns = 1;
+
 // Helper function prototypes
 static void illuminate_locked_state_leds(void);
 static void illuminate_unlocked_state_leds(void);
@@ -101,12 +105,22 @@ static void toggle_alarm_leds() {
 // Display Helper Functions
 static void display_combination() {
     char display_buffer[32]; // Increased buffer size to prevent overflow
-    snprintf(display_buffer, sizeof(display_buffer), "Set Digit %d: %02d-%02d-%02d",
-             current_digit + 1,
-             entered_combination[0],
-             entered_combination[1],
-             entered_combination[2]);
-    display_string(0, display_buffer);
+
+    if (current_digit == 0) {
+        snprintf(display_buffer, sizeof(display_buffer), "%02d-  -  ", entered_combination[0]);
+        display_string(0, display_buffer);
+    }
+    else if (current_digit == 1) {
+        snprintf(display_buffer, sizeof(display_buffer), "%02d-%02d-  ", entered_combination[0], entered_combination[1]);
+        display_string(0, display_buffer);
+    }
+    else if (current_digit == 2) {
+        snprintf(display_buffer, sizeof(display_buffer), "%02d-%02d-%02d",
+                entered_combination[0],
+                entered_combination[1],
+                entered_combination[2]);
+        display_string(0, display_buffer);
+    }
 }
 
 static void display_open_message() {
@@ -114,7 +128,7 @@ static void display_open_message() {
 }
 
 static void display_locked_message() {
-    display_string(0, "LOCKED");
+    display_string(0, "  -  -  ");
 }
 
 static void display_alarm_message() {
@@ -148,6 +162,12 @@ void control_lock(void) {
             if (cowpi_left_button_is_pressed() && cowpi_right_button_is_pressed()) {
                 lock_system();
             }
+
+            if (cowpi_left_switch_is_in_right_position() && cowpi_right_button_is_pressed()) {
+
+            }
+
+            
             break;
 
         case ALARMED:
@@ -189,7 +209,7 @@ void control_lock(void) {
                         current_digit = 0;
                         lock_state = LOCKED;
                         illuminate_locked_state_leds();
-                        display_combination(); // Shows "Set Digit 1: 00-00-00"
+                        display_locked_message(); // Shows "  -  -  "
                     }
                 }
             }
@@ -257,6 +277,16 @@ static void handle_combination_entry() {
             entered_combination[current_digit]++;
             if (entered_combination[current_digit] > 15) {
                 entered_combination[current_digit] = 0;
+
+                if (current_digit == 0) {
+                    num_first_entry_turns++;
+                }
+                else if (current_digit == 1) {
+                    num_second_entry_turns++;
+                }
+                else if (current_digit == 2) {
+                    num_third_entry_turns++;
+                }
             }
             display_combination();
         }
@@ -282,7 +312,9 @@ static void increment_current_digit() {
 
 // Evaluate combination
 static bool evaluate_combination() {
-    return (memcmp(combination, entered_combination, sizeof(combination)) == 0);
+    bool is_correct_combination = (memcmp(combination, entered_combination, sizeof(combination)) == 0);
+    bool has_correct_num_turns = (num_first_entry_turns == 3) && (num_second_entry_turns == 2) && (num_third_entry_turns == 1);
+    return is_correct_combination && has_correct_num_turns;
 }
 
 uint8_t const *get_combination(void) {
